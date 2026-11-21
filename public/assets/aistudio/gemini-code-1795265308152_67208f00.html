@@ -1,0 +1,542 @@
+<!DOCTYPE html>
+<html lang="vi" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kết nối với tôi | Bio Links</title>
+    <!-- Font chữ hiện đại -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Thư viện Icon FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    
+    <style>
+        :root {
+            --bg-color: #09090b;
+            --card-bg: rgba(24, 24, 27, 0.65);
+            --card-border: rgba(255, 255, 255, 0.08);
+            --text-primary: #fafafa;
+            --text-secondary: #a1a1aa;
+            --btn-bg: rgba(39, 39, 42, 0.5);
+            --btn-hover: rgba(63, 63, 70, 0.7);
+            --glow-1: #3b82f6;
+            --glow-2: #8b5cf6;
+            --glow-3: #ec4899;
+        }
+
+        [data-theme="light"] {
+            --bg-color: #f4f4f5;
+            --card-bg: rgba(255, 255, 255, 0.75);
+            --card-border: rgba(0, 0, 0, 0.08);
+            --text-primary: #18181b;
+            --text-secondary: #52525b;
+            --btn-bg: rgba(244, 244, 245, 0.8);
+            --btn-hover: rgba(228, 228, 231, 0.9);
+            --glow-1: #60a5fa;
+            --glow-2: #a78bfa;
+            --glow-3: #f472b6;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-primary);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 24px 16px;
+            overflow-x: hidden;
+            position: relative;
+            transition: background-color 0.4s ease, color 0.4s ease;
+        }
+
+        /* Hiệu ứng nền đốm sáng chuyển động */
+        .ambient-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: -1;
+            overflow: hidden;
+            pointer-events: none;
+        }
+
+        .orb {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(90px);
+            opacity: 0.45;
+            animation: float 14s infinite ease-in-out alternate;
+        }
+
+        .orb-1 {
+            width: 320px;
+            height: 320px;
+            background: var(--glow-1);
+            top: -10%;
+            left: -10%;
+        }
+
+        .orb-2 {
+            width: 350px;
+            height: 350px;
+            background: var(--glow-2);
+            bottom: -10%;
+            right: -10%;
+            animation-delay: -5s;
+        }
+
+        .orb-3 {
+            width: 250px;
+            height: 250px;
+            background: var(--glow-3);
+            top: 40%;
+            left: 45%;
+            opacity: 0.25;
+            animation-delay: -9s;
+        }
+
+        @keyframes float {
+            0% { transform: translate(0, 0) scale(1); }
+            50% { transform: translate(30px, -40px) scale(1.1); }
+            100% { transform: translate(-20px, 30px) scale(0.95); }
+        }
+
+        /* Khung chính Glassmorphism */
+        .container {
+            width: 100%;
+            max-width: 440px;
+            background: var(--card-bg);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            border: 1px solid var(--card-border);
+            border-radius: 28px;
+            padding: 32px 24px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.35);
+            position: relative;
+            animation: fadeUp 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(25px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Thanh công cụ trên cùng */
+        .top-actions {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .icon-btn {
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            border: 1px solid var(--card-border);
+            background: var(--btn-bg);
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            font-size: 15px;
+        }
+
+        .icon-btn:hover {
+            transform: scale(1.08);
+            background: var(--btn-hover);
+        }
+
+        /* Phần Avatar & Tên */
+        .profile-header {
+            text-align: center;
+            margin-bottom: 28px;
+        }
+
+        .avatar-wrapper {
+            position: relative;
+            width: 96px;
+            height: 96px;
+            margin: 0 auto 16px;
+        }
+
+        .avatar-ring {
+            position: absolute;
+            inset: -4px;
+            border-radius: 50%;
+            background: linear-gradient(45deg, #3b82f6, #8b5cf6, #ec4899, #3b82f6);
+            background-size: 300% 300%;
+            animation: spinGradient 4s linear infinite;
+            z-index: 0;
+        }
+
+        @keyframes spinGradient {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        .avatar {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 3px solid var(--bg-color);
+            z-index: 1;
+        }
+
+        .profile-name {
+            font-size: 22px;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+        }
+
+        .verified-badge {
+            color: #3b82f6;
+            font-size: 16px;
+        }
+
+        .profile-handle {
+            font-size: 14px;
+            color: var(--text-secondary);
+            margin-top: 4px;
+        }
+
+        /* Danh sách nút nền tảng */
+        .links-list {
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+        }
+
+        .link-item {
+            position: relative;
+            display: flex;
+            align-items: center;
+            padding: 14px 18px;
+            background: var(--btn-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 18px;
+            text-decoration: none;
+            color: var(--text-primary);
+            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+            overflow: hidden;
+        }
+
+        /* Hiệu ứng vệt sáng quét qua khi hover */
+        .link-item::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.12), transparent);
+            transition: left 0.5s ease;
+        }
+
+        .link-item:hover::before {
+            left: 100%;
+        }
+
+        .link-item:hover {
+            transform: translateY(-3px) scale(1.015);
+            background: var(--btn-hover);
+            border-color: var(--brand-color, rgba(255,255,255,0.3));
+            box-shadow: 0 10px 25px -5px var(--brand-shadow, rgba(0, 0, 0, 0.2));
+        }
+
+        .link-item:active {
+            transform: scale(0.98);
+        }
+
+        .platform-icon {
+            width: 42px;
+            height: 42px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            background: rgba(255, 255, 255, 0.06);
+            color: var(--brand-color, var(--text-primary));
+            margin-right: 16px;
+            transition: all 0.3s ease;
+            flex-shrink: 0;
+        }
+
+        .link-item:hover .platform-icon {
+            background: var(--brand-color);
+            color: #ffffff;
+            transform: rotate(-6deg) scale(1.05);
+        }
+
+        .platform-info {
+            flex-grow: 1;
+        }
+
+        .platform-title {
+            font-size: 15px;
+            font-weight: 600;
+            display: block;
+        }
+
+        .platform-sub {
+            font-size: 12px;
+            color: var(--text-secondary);
+            margin-top: 2px;
+            display: block;
+        }
+
+        .arrow-icon {
+            color: var(--text-secondary);
+            font-size: 14px;
+            transition: transform 0.3s ease, color 0.3s ease;
+        }
+
+        .link-item:hover .arrow-icon {
+            transform: translateX(4px);
+            color: var(--text-primary);
+        }
+
+        /* Lưới icon phụ dưới cùng */
+        .social-dock {
+            display: flex;
+            justify-content: center;
+            gap: 14px;
+            margin-top: 26px;
+            padding-top: 20px;
+            border-top: 1px solid var(--card-border);
+        }
+
+        .dock-item {
+            width: 42px;
+            height: 42px;
+            border-radius: 14px;
+            background: var(--btn-bg);
+            border: 1px solid var(--card-border);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-size: 18px;
+            transition: all 0.25s ease;
+        }
+
+        .dock-item:hover {
+            color: #fff;
+            background: var(--brand-color, #3b82f6);
+            transform: translateY(-4px);
+            box-shadow: 0 8px 16px -4px var(--brand-shadow, rgba(59, 130, 246, 0.4));
+        }
+
+        /* Thông báo Copy */
+        .toast {
+            position: fixed;
+            bottom: 24px;
+            left: 50%;
+            transform: translateX(-50%) translateY(100px);
+            background: #10b981;
+            color: #fff;
+            padding: 10px 20px;
+            border-radius: 99px;
+            font-size: 13px;
+            font-weight: 600;
+            box-shadow: 0 10px 25px rgba(16, 185, 129, 0.4);
+            opacity: 0;
+            transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+            z-index: 100;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .toast.show {
+            transform: translateX(-50%) translateY(0);
+            opacity: 1;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Hiệu ứng ánh sáng nền -->
+    <div class="ambient-bg">
+        <div class="orb orb-1"></div>
+        <div class="orb orb-2"></div>
+        <div class="orb orb-3"></div>
+    </div>
+
+    <main class="container" id="card">
+        <!-- Nút chức năng góc trên -->
+        <div class="top-actions">
+            <button class="icon-btn" id="shareBtn" title="Sao chép liên kết">
+                <i class="fa-solid fa-share-nodes"></i>
+            </button>
+            <button class="icon-btn" id="themeBtn" title="Đổi giao diện Sáng/Tối">
+                <i class="fa-solid fa-sun" id="themeIcon"></i>
+            </button>
+        </div>
+
+        <!-- Thông tin định danh tối giản -->
+        <header class="profile-header">
+            <div class="avatar-wrapper">
+                <div class="avatar-ring"></div>
+                <!-- Thay link ảnh đại diện của bạn tại đây -->
+                <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=300&q=80" alt="Avatar" class="avatar">
+            </div>
+            <h1 class="profile-name">
+                Tên Hiển Thị Của Bạn
+                <i class="fa-solid fa-circle-check verified-badge"></i>
+            </h1>
+            <p class="profile-handle">@username</p>
+        </header>
+
+        <!-- Danh sách các nền tảng chính (Chỉnh sửa link & tên tại đây) -->
+        <section class="links-list">
+            
+            <!-- Facebook -->
+            <a href="https://facebook.com" target="_blank" rel="noopener" class="link-item" style="--brand-color: #1877F2; --brand-shadow: rgba(24, 119, 242, 0.35);">
+                <div class="platform-icon">
+                    <i class="fa-brands fa-facebook-f"></i>
+                </div>
+                <div class="platform-info">
+                    <span class="platform-title">Facebook</span>
+                    <span class="platform-sub">Kết nối & cập nhật hoạt động mới nhất</span>
+                </div>
+                <i class="fa-solid fa-arrow-up-right-from-square arrow-icon"></i>
+            </a>
+
+            <!-- TikTok -->
+            <a href="https://tiktok.com" target="_blank" rel="noopener" class="link-item" style="--brand-color: #ff0050; --brand-shadow: rgba(255, 0, 80, 0.35);">
+                <div class="platform-icon">
+                    <i class="fa-brands fa-tiktok"></i>
+                </div>
+                <div class="platform-info">
+                    <span class="platform-title">TikTok</span>
+                    <span class="platform-sub">Video ngắn & chia sẻ sáng tạo</span>
+                </div>
+                <i class="fa-solid fa-arrow-up-right-from-square arrow-icon"></i>
+            </a>
+
+            <!-- YouTube -->
+            <a href="https://youtube.com" target="_blank" rel="noopener" class="link-item" style="--brand-color: #FF0000; --brand-shadow: rgba(255, 0, 0, 0.35);">
+                <div class="platform-icon">
+                    <i class="fa-brands fa-youtube"></i>
+                </div>
+                <div class="platform-info">
+                    <span class="platform-title">YouTube</span>
+                    <span class="platform-sub">Kênh video chính thức</span>
+                </div>
+                <i class="fa-solid fa-arrow-up-right-from-square arrow-icon"></i>
+            </a>
+
+            <!-- Zalo -->
+            <a href="https://zalo.me" target="_blank" rel="noopener" class="link-item" style="--brand-color: #0068FF; --brand-shadow: rgba(0, 104, 255, 0.35);">
+                <div class="platform-icon">
+                    <i class="fa-solid fa-comment-dots"></i>
+                </div>
+                <div class="platform-info">
+                    <span class="platform-title">Zalo</span>
+                    <span class="platform-sub">Nhắn tin & trao đổi trực tiếp</span>
+                </div>
+                <i class="fa-solid fa-arrow-up-right-from-square arrow-icon"></i>
+            </a>
+
+            <!-- GitHub / Website -->
+            <a href="https://github.com" target="_blank" rel="noopener" class="link-item" style="--brand-color: #8b5cf6; --brand-shadow: rgba(139, 92, 246, 0.35);">
+                <div class="platform-icon">
+                    <i class="fa-brands fa-github"></i>
+                </div>
+                <div class="platform-info">
+                    <span class="platform-title">GitHub / Dự án</span>
+                    <span class="platform-sub">Kho lưu trữ mã nguồn & sản phẩm số</span>
+                </div>
+                <i class="fa-solid fa-arrow-up-right-from-square arrow-icon"></i>
+            </a>
+
+        </section>
+
+        <!-- Thanh dock các mạng xã hội phụ -->
+        <footer class="social-dock">
+            <a href="https://instagram.com" target="_blank" class="dock-item" style="--brand-color: #E4405F; --brand-shadow: rgba(228, 64, 95, 0.4);" title="Instagram">
+                <i class="fa-brands fa-instagram"></i>
+            </a>
+            <a href="https://t.me" target="_blank" class="dock-item" style="--brand-color: #26A5E4; --brand-shadow: rgba(38, 165, 228, 0.4);" title="Telegram">
+                <i class="fa-brands fa-telegram"></i>
+            </a>
+            <a href="https://threads.net" target="_blank" class="dock-item" style="--brand-color: #71717a; --brand-shadow: rgba(113, 113, 122, 0.4);" title="Threads">
+                <i class="fa-brands fa-threads"></i>
+            </a>
+            <a href="mailto:example@gmail.com" class="dock-item" style="--brand-color: #EA4335; --brand-shadow: rgba(234, 67, 53, 0.4);" title="Gửi Email">
+                <i class="fa-solid fa-envelope"></i>
+            </a>
+        </footer>
+    </main>
+
+    <!-- Thông báo Toast -->
+    <div class="toast" id="toast">
+        <i class="fa-solid fa-check-circle"></i>
+        <span>Đã sao chép liên kết trang!</span>
+    </div>
+
+    <script>
+        // 1. Chuyển đổi Dark / Light Mode
+        const themeBtn = document.getElementById('themeBtn');
+        const themeIcon = document.getElementById('themeIcon');
+        const htmlEl = document.documentElement;
+
+        themeBtn.addEventListener('click', () => {
+            const currentTheme = htmlEl.getAttribute('data-theme');
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            htmlEl.setAttribute('data-theme', newTheme);
+            themeIcon.className = newTheme === 'dark' ? 'fa-solid fa-sun' : 'fa-solid fa-moon';
+        });
+
+        // 2. Sao chép link trang
+        const shareBtn = document.getElementById('shareBtn');
+        const toast = document.getElementById('toast');
+
+        shareBtn.addEventListener('click', async () => {
+            try {
+                await navigator.clipboard.writeText(window.location.href);
+                toast.classList.add('show');
+                setTimeout(() => toast.classList.remove('show'), 2500);
+            } catch (err) {
+                console.error('Không thể sao chép:', err);
+            }
+        });
+
+        // 3. Hiệu ứng nghiêng 3D nhẹ khi di chuột trên máy tính
+        const card = document.getElementById('card');
+        document.addEventListener('mousemove', (e) => {
+            if (window.innerWidth < 768) return;
+            const xAxis = (window.innerWidth / 2 - e.pageX) / 45;
+            const yAxis = (window.innerHeight / 2 - e.pageY) / 45;
+            card.style.transform = `rotateY(${xAxis}deg) rotateX(${yAxis}deg)`;
+        });
+
+        document.addEventListener('mouseleave', () => {
+            card.style.transform = `rotateY(0deg) rotateX(0deg)`;
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,271 @@
+{
+  "entities": {
+    "UserAccount": {
+      "title": "UserAccount",
+      "description": "Private user account profile containing PII isolated from public Bio pages.",
+      "type": "object",
+      "properties": {
+        "uid": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$",
+          "description": "Firebase Auth UID of the account owner."
+        },
+        "email": {
+          "type": "string",
+          "format": "email",
+          "maxLength": 200,
+          "description": "User email address (private PII)."
+        },
+        "displayName": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 60,
+          "description": "Creator account display name."
+        },
+        "activeHandle": {
+          "type": "string",
+          "maxLength": 32,
+          "pattern": "^$|^[a-z0-9_\\-]{3,32}$",
+          "description": "Currently claimed public bio handle."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp when account record was created."
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server timestamp when account record was last updated."
+        }
+      },
+      "required": ["uid", "email", "displayName", "activeHandle", "createdAt", "updatedAt"]
+    },
+    "BioProfile": {
+      "title": "BioProfile",
+      "description": "Publicly accessible creator Bio page keyed by unique lowercase handle.",
+      "type": "object",
+      "properties": {
+        "handle": {
+          "type": "string",
+          "minLength": 3,
+          "maxLength": 32,
+          "pattern": "^[a-z0-9_\\-]+$",
+          "description": "Unique lowercase URL handle."
+        },
+        "ownerId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$",
+          "description": "Firebase Auth UID of the Bio creator."
+        },
+        "displayName": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 60,
+          "description": "Public display name on the Bio page."
+        },
+        "tagline": {
+          "type": "string",
+          "maxLength": 180,
+          "description": "Short creative bio tagline."
+        },
+        "category": {
+          "type": "string",
+          "maxLength": 40,
+          "description": "Creator niche or category."
+        },
+        "location": {
+          "type": "string",
+          "maxLength": 40,
+          "description": "Creator city or region."
+        },
+        "avatarUrl": {
+          "type": "string",
+          "maxLength": 120000,
+          "description": "Avatar asset path, HTTPS URL, or compact Base64 image Data URL."
+        },
+        "coverUrl": {
+          "type": "string",
+          "maxLength": 500,
+          "description": "Cover banner asset path or HTTPS URL."
+        },
+        "themeId": {
+          "type": "string",
+          "enum": ["matcha", "midnight", "citrus", "peach", "cobalt", "rose"],
+          "description": "Selected visual theme identifier."
+        },
+        "layoutMode": {
+          "type": "string",
+          "enum": ["stack", "bento"],
+          "description": "Card layout mode."
+        },
+        "buttonRadius": {
+          "type": "string",
+          "enum": ["sharp", "soft", "pill"],
+          "description": "Link card corner style."
+        },
+        "fontMood": {
+          "type": "string",
+          "enum": ["editorial", "modern", "bold"],
+          "description": "Typography mood preset."
+        },
+        "isPublished": {
+          "type": "boolean",
+          "description": "Whether the Bio page is publicly discoverable."
+        },
+        "viewCount": {
+          "type": "integer",
+          "description": "Total profile view counter."
+        },
+        "socials": {
+          "type": "object",
+          "description": "Map of social platform handles or URLs."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server creation timestamp."
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server update timestamp."
+        }
+      },
+      "required": [
+        "handle",
+        "ownerId",
+        "displayName",
+        "tagline",
+        "category",
+        "location",
+        "avatarUrl",
+        "coverUrl",
+        "themeId",
+        "layoutMode",
+        "buttonRadius",
+        "fontMood",
+        "isPublished",
+        "viewCount",
+        "socials",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    "BioLink": {
+      "title": "BioLink",
+      "description": "Individual interactive link or featured content card under a BioProfile.",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$",
+          "description": "Unique link document ID."
+        },
+        "bioHandle": {
+          "type": "string",
+          "minLength": 3,
+          "maxLength": 32,
+          "pattern": "^[a-z0-9_\\-]+$",
+          "description": "Parent BioProfile handle."
+        },
+        "ownerId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^[a-zA-Z0-9_\\-]+$",
+          "description": "UID of the parent BioProfile owner."
+        },
+        "title": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 80,
+          "description": "Link card headline."
+        },
+        "subtitle": {
+          "type": "string",
+          "maxLength": 120,
+          "description": "Optional short description or artist/platform subtitle."
+        },
+        "url": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 500,
+          "description": "Destination HTTPS URL."
+        },
+        "kind": {
+          "type": "string",
+          "enum": ["link", "featured", "music"],
+          "description": "Visual card variant."
+        },
+        "thumbnailUrl": {
+          "type": "string",
+          "maxLength": 50000,
+          "description": "Optional thumbnail image path, HTTPS URL, or compact Base64 image Data URL."
+        },
+        "order": {
+          "type": "integer",
+          "description": "Sort index within the Bio page."
+        },
+        "isActive": {
+          "type": "boolean",
+          "description": "Whether the link is visible on the Bio page."
+        },
+        "isPublished": {
+          "type": "boolean",
+          "description": "Mirrors parent BioProfile publish state for zero-cost list queries."
+        },
+        "clicks": {
+          "type": "integer",
+          "description": "Recorded link click count."
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server creation timestamp."
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "Server update timestamp."
+        }
+      },
+      "required": [
+        "id",
+        "bioHandle",
+        "ownerId",
+        "title",
+        "subtitle",
+        "url",
+        "kind",
+        "thumbnailUrl",
+        "order",
+        "isActive",
+        "isPublished",
+        "clicks",
+        "createdAt",
+        "updatedAt"
+      ]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": { "$ref": "#/entities/UserAccount" },
+      "description": "Private user account records storing email and active bio handle."
+    },
+    "/bios/{handle}": {
+      "schema": { "$ref": "#/entities/BioProfile" },
+      "description": "Public creator Bio pages indexed by unique lowercase handle."
+    },
+    "/bios/{handle}/links/{linkId}": {
+      "schema": { "$ref": "#/entities/BioLink" },
+      "description": "Ordered link cards belonging to a creator Bio page."
+    }
+  }
+}

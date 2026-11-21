@@ -1,0 +1,267 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Global Safety Net (Default Deny)
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // --- Reusable Hardened Primitives ---
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isVerifiedEmail() {
+      return isSignedIn() && request.auth.token.email_verified == true;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() >= 1 && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function isValidHandle(handle) {
+      return handle is string && handle.size() >= 3 && handle.size() <= 32 && handle.matches('^[a-z0-9_\\-]+$');
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    // --- Validation Blueprints ---
+    function isValidUser(data, userId) {
+      return data.keys().hasAll(['uid', 'email', 'displayName', 'activeHandle', 'createdAt', 'updatedAt'])
+        && data.keys().hasOnly(['uid', 'email', 'displayName', 'activeHandle', 'createdAt', 'updatedAt'])
+        && data.uid is string && data.uid == userId && data.uid == request.auth.uid && data.uid.size() <= 128
+        && data.email is string && data.email.size() >= 3 && data.email.size() <= 200
+        && data.displayName is string && data.displayName.size() >= 1 && data.displayName.size() <= 60
+        && data.activeHandle is string && data.activeHandle.size() <= 32 && (data.activeHandle == '' || isValidHandle(data.activeHandle))
+        && data.createdAt is timestamp
+        && data.updatedAt is timestamp;
+    }
+
+    function isValidSocialField(socials, key) {
+      return !(key in socials) || (socials[key] is string && socials[key].size() <= 200);
+    }
+
+    function isValidSocialsMap(socials) {
+      return socials is map
+        && socials.keys().hasOnly(['tiktok', 'instagram', 'youtube', 'threads', 'facebook', 'spotify', 'discord', 'zalo', 'website'])
+        && isValidSocialField(socials, 'tiktok')
+        && isValidSocialField(socials, 'instagram')
+        && isValidSocialField(socials, 'youtube')
+        && isValidSocialField(socials, 'threads')
+        && isValidSocialField(socials, 'facebook')
+        && isValidSocialField(socials, 'spotify')
+        && isValidSocialField(socials, 'discord')
+        && isValidSocialField(socials, 'zalo')
+        && isValidSocialField(socials, 'website');
+    }
+
+    function isValidImageField(val, maxDataLen) {
+      return val is string
+        && (
+          val == ''
+          || (val.size() <= 500 && (val.matches('^/src/assets/.*') || val.matches('^https?://.*')))
+          || (
+            val.size() >= 23
+            && val.size() <= maxDataLen
+            && (
+              val[0:23] == 'data:image/jpeg;base64,'
+              || val[0:23] == 'data:image/webp;base64,'
+              || val[0:22] == 'data:image/png;base64,'
+            )
+          )
+        );
+    }
+
+    function isValidBioProfile(data, handle) {
+      return data.keys().hasAll([
+          'handle', 'ownerId', 'displayName', 'tagline', 'category', 'location',
+          'avatarUrl', 'coverUrl', 'themeId', 'layoutMode', 'buttonRadius',
+          'fontMood', 'isPublished', 'viewCount', 'socials', 'createdAt', 'updatedAt'
+        ])
+        && data.keys().hasOnly([
+          'handle', 'ownerId', 'displayName', 'tagline', 'category', 'location',
+          'avatarUrl', 'coverUrl', 'themeId', 'layoutMode', 'buttonRadius',
+          'fontMood', 'isPublished', 'viewCount', 'socials', 'createdAt', 'updatedAt'
+        ])
+        && isValidHandle(data.handle) && data.handle == handle
+        && data.ownerId is string && isValidId(data.ownerId)
+        && data.displayName is string && data.displayName.size() >= 1 && data.displayName.size() <= 60
+        && data.tagline is string && data.tagline.size() <= 180
+        && data.category is string && data.category.size() <= 40
+        && data.location is string && data.location.size() <= 40
+        && isValidImageField(data.avatarUrl, 120000)
+        && data.coverUrl is string && data.coverUrl.size() <= 500
+        && data.themeId in ['matcha', 'midnight', 'citrus', 'peach', 'cobalt', 'rose']
+        && data.layoutMode in ['stack', 'bento']
+        && data.buttonRadius in ['sharp', 'soft', 'pill']
+        && data.fontMood in ['editorial', 'modern', 'bold']
+        && data.isPublished is bool
+        && data.viewCount is int && data.viewCount >= 0
+        && isValidSocialsMap(data.socials)
+        && data.createdAt is timestamp
+        && data.updatedAt is timestamp;
+    }
+
+    function isValidBioLink(data, handle, linkId) {
+      return data.keys().hasAll([
+          'id', 'bioHandle', 'ownerId', 'title', 'subtitle', 'url',
+          'kind', 'thumbnailUrl', 'order', 'isActive', 'isPublished',
+          'clicks', 'createdAt', 'updatedAt'
+        ])
+        && data.keys().hasOnly([
+          'id', 'bioHandle', 'ownerId', 'title', 'subtitle', 'url',
+          'kind', 'thumbnailUrl', 'order', 'isActive', 'isPublished',
+          'clicks', 'createdAt', 'updatedAt'
+        ])
+        && isValidId(data.id) && data.id == linkId
+        && isValidHandle(data.bioHandle) && data.bioHandle == handle
+        && isValidId(data.ownerId)
+        && data.title is string && data.title.size() >= 1 && data.title.size() <= 80
+        && data.subtitle is string && data.subtitle.size() <= 120
+        && data.url is string && data.url.size() >= 1 && data.url.size() <= 500
+        && data.kind in ['link', 'featured', 'music']
+        && isValidImageField(data.thumbnailUrl, 50000)
+        && data.order is int && data.order >= 0 && data.order <= 200
+        && data.isActive is bool
+        && data.isPublished is bool
+        && data.clicks is int && data.clicks >= 0
+        && data.createdAt is timestamp
+        && data.updatedAt is timestamp;
+    }
+
+    // --- Collection Rules ---
+
+    // 1. Private User Accounts (PII isolated, zero list queries)
+    match /users/{userId} {
+      allow get: if isValidId(userId) && isOwner(userId);
+      allow list: if false;
+
+      allow create: if isVerifiedEmail()
+        && isValidId(userId)
+        && isOwner(userId)
+        && isValidUser(incoming(), userId)
+        && incoming().createdAt == request.time
+        && incoming().updatedAt == request.time;
+
+      allow update: if isVerifiedEmail()
+        && isValidId(userId)
+        && isOwner(userId)
+        && isValidUser(incoming(), userId)
+        && incoming().uid == existing().uid
+        && incoming().email == existing().email
+        && incoming().createdAt == existing().createdAt
+        && incoming().updatedAt == request.time
+        && incoming().diff(existing()).affectedKeys().hasOnly(['displayName', 'activeHandle', 'updatedAt']);
+
+      allow delete: if isVerifiedEmail() && isValidId(userId) && isOwner(userId);
+    }
+
+    // 2. Public Bio Profiles (Zero PII, owner-controlled)
+    match /bios/{handle} {
+      allow get: if isValidHandle(handle)
+        && (resource == null || existing().isPublished == true || (isSignedIn() && existing().ownerId == request.auth.uid));
+
+      allow list: if existing().isPublished == true || (isSignedIn() && existing().ownerId == request.auth.uid);
+
+      allow create: if isVerifiedEmail()
+        && isValidHandle(handle)
+        && isValidBioProfile(incoming(), handle)
+        && incoming().ownerId == request.auth.uid
+        && incoming().viewCount == 0
+        && incoming().createdAt == request.time
+        && incoming().updatedAt == request.time;
+
+      allow update: if isVerifiedEmail()
+        && isValidHandle(handle)
+        && isValidBioProfile(incoming(), handle)
+        && incoming().ownerId == existing().ownerId
+        && incoming().handle == existing().handle
+        && incoming().createdAt == existing().createdAt
+        && incoming().updatedAt == request.time
+        && (
+          (
+            existing().ownerId == request.auth.uid
+            && incoming().viewCount == existing().viewCount
+            && incoming().diff(existing()).affectedKeys().hasOnly([
+              'displayName', 'tagline', 'category', 'location',
+              'avatarUrl', 'coverUrl', 'themeId', 'layoutMode', 'buttonRadius',
+              'fontMood', 'isPublished', 'socials', 'updatedAt'
+            ])
+          )
+          ||
+          (
+            existing().isPublished == true
+            && incoming().viewCount == existing().viewCount + 1
+            && incoming().diff(existing()).affectedKeys().hasOnly(['viewCount', 'updatedAt'])
+          )
+        );
+
+      allow delete: if isVerifiedEmail()
+        && isValidHandle(handle)
+        && existing().ownerId == request.auth.uid;
+
+      // 3. Bio Links Subcollection (Master Gate checks parent BioProfile)
+      match /links/{linkId} {
+        allow get: if isValidHandle(handle)
+          && isValidId(linkId)
+          && (resource == null || existing().isPublished == true || (isSignedIn() && existing().ownerId == request.auth.uid));
+
+        allow list: if existing().isPublished == true || (isSignedIn() && existing().ownerId == request.auth.uid);
+
+        allow create: if isVerifiedEmail()
+          && isValidHandle(handle)
+          && isValidId(linkId)
+          && isValidBioLink(incoming(), handle, linkId)
+          && incoming().ownerId == request.auth.uid
+          && incoming().clicks == 0
+          && incoming().createdAt == request.time
+          && incoming().updatedAt == request.time
+          && exists(/databases/$(database)/documents/bios/$(handle))
+          && get(/databases/$(database)/documents/bios/$(handle)).data.ownerId == request.auth.uid;
+
+        allow update: if isVerifiedEmail()
+          && isValidHandle(handle)
+          && isValidId(linkId)
+          && isValidBioLink(incoming(), handle, linkId)
+          && incoming().ownerId == existing().ownerId
+          && incoming().bioHandle == existing().bioHandle
+          && incoming().id == existing().id
+          && incoming().createdAt == existing().createdAt
+          && incoming().updatedAt == request.time
+          && (
+            (
+              get(/databases/$(database)/documents/bios/$(handle)).data.ownerId == request.auth.uid
+              && incoming().clicks == existing().clicks
+              && incoming().diff(existing()).affectedKeys().hasOnly([
+                'title', 'subtitle', 'url', 'kind', 'thumbnailUrl',
+                'order', 'isActive', 'isPublished', 'updatedAt'
+              ])
+            )
+            ||
+            (
+              existing().isPublished == true
+              && incoming().clicks == existing().clicks + 1
+              && incoming().diff(existing()).affectedKeys().hasOnly(['clicks', 'updatedAt'])
+            )
+          );
+
+        allow delete: if isVerifiedEmail()
+          && isValidHandle(handle)
+          && isValidId(linkId)
+          && get(/databases/$(database)/documents/bios/$(handle)).data.ownerId == request.auth.uid;
+      }
+    }
+  }
+}
